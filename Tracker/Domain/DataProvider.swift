@@ -21,7 +21,7 @@ protocol DataProviderProtocol {
     
     func checkTracker( for trackerID: String?, completed: Bool, with date: Date)
     
-    func saveTracker(_ tracker: Tracker) throws
+    func saveTracker(_ tracker: Tracker, in categoryCoreData: TrackerCategoryCoreData) throws
 }
 
 final class DataProvider: NSObject {
@@ -153,13 +153,8 @@ extension DataProvider: DataProviderProtocol {
         }
     }
     
-    func saveTracker(_ tracker: Tracker) throws {
-        
-        // по заданию пока категории не реализовываем, поэтому все привычки сохраняю в одну рандомную категорию
-        
-        let fetchRequestCategory = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
-        guard let trackerCategoryCoreData = try? context.fetch(fetchRequestCategory).randomElement() else { return }
-        trackerStore.addNewTracker(tracker, with: trackerCategoryCoreData)
+    func saveTracker(_ tracker: Tracker, in categoryCoreData: TrackerCategoryCoreData) throws {
+        trackerStore.addNewTracker(tracker, with: categoryCoreData)
     }
 }
 

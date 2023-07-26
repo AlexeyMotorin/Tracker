@@ -1,7 +1,9 @@
 import UIKit
 
 final class CategoryCollectionViewCell: UICollectionViewCell {
-    static let reuseIdentifire = "CategoryCollectionViewCell"
+    static let cellReuseIdentifier = "CategoryCollectionViewCell"
+    
+    private var viewModel: CategoryCellViewModelProtocol?
     
     private struct CategoryCollectionViewCellConstants {
         static let checkmarkImageName = "checkmark"
@@ -51,28 +53,26 @@ final class CategoryCollectionViewCell: UICollectionViewCell {
         lineView.isHidden = false
     }
     
+    func initialize(viewModel: CategoryCellViewModelProtocol?) {
+        self.viewModel = viewModel
+        bind()
+    }
+    
+    private func bind() {
+        guard let viewModel else { return }
+        categoryLabel.text = viewModel.categoryLabel
+        checkmarkImageView.isHidden = viewModel.selectedCategory ? false : true
+    }
+    
     private func setupView() {
         backgroundColor = .clear
         contentView.backgroundColor = .ypBackground
     }
     
-    func config(category: String?) {
-        categoryLabel.text = category
-    }
-    
-    func didSelect() {
-        checkmarkImageView.isHidden = false
-    }
-    
-    func didDeselect() {
-        checkmarkImageView.isHidden = true
-    }
-    
     func hideLineView() {
         lineView.isHidden = true
     }
-    
-    
+        
     private func addSubview() {
         contentView.addSubViews(
             categoryLabel,

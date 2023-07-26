@@ -4,7 +4,7 @@ protocol CreateTrackerViewDelegate: AnyObject {
     func sendTrackerSetup(nameTracker: String?, color: UIColor, emoji: String)
     func cancelCreate()
     func showCategory()
-    func showShedule()
+    func showSchedule()
 }
 
 final class CreateTrackerView: UIView {
@@ -25,7 +25,12 @@ final class CreateTrackerView: UIView {
     // MARK: -Private properties
     private var typeTracer: TypeTracker
     private var contentSize: CGSize {
-        CGSize(width: frame.width, height: 931)
+        switch typeTracer {
+        case .habit:
+            return CGSize(width: frame.width, height: 931)
+        case .event:
+            return CGSize(width: frame.width, height: 841)
+        }
     }
     
     private var emojiCollectionViewHelper: ColorAndEmojiCollectionViewHelper
@@ -340,7 +345,7 @@ extension CreateTrackerView: SheduleCategoryTableViewHelperDelegate {
     }
     
     func showShedule() {
-        delegate?.showShedule()
+        delegate?.showSchedule()
     }
     
     func showCategory() {

@@ -6,9 +6,11 @@ protocol CreateTrackerViewControllerDelegate: AnyObject {
 
 final class CreateTrackerViewController: UIViewController {
     
+    // MARK: public properties
     var typeTracker: TypeTracker?
     weak var delegate: CreateTrackerViewControllerDelegate?
     
+   // MARK: helpers
     private enum SheduleCategory {
         case shedule
         case category
@@ -20,7 +22,8 @@ final class CreateTrackerViewController: UIViewController {
         static let weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
     }
     
-    private var categoryString: String?
+    // MARK: private properties
+    private var selectedCategory: TrackerCategoryCoreData?
     private var selectedDates: [String]?
     
     private var stringSelectedDates: String {
@@ -31,13 +34,13 @@ final class CreateTrackerViewController: UIViewController {
         }
     }
     
-    private var trackerCategory: TrackerCategory?
     private var tracker: Tracker?
-    
     private let dataProvider = DataProvider()
     
+    // MARK: UI
     private var createTrackerView: CreateTrackerView!
     
+    // MARK: - override
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -60,6 +63,7 @@ final class CreateTrackerViewController: UIViewController {
         }
     }
     
+    // MARK: private methods
     private func setupView(with title: String) {
         view.backgroundColor = .clear
         self.title = title
@@ -71,6 +75,7 @@ final class CreateTrackerViewController: UIViewController {
     }
 }
 
+// MARK: CreateTrackerViewDelegate
 extension CreateTrackerViewController: CreateTrackerViewDelegate {
     func sendTrackerSetup(nameTracker: String?, color: UIColor, emoji: String) {
         if typeTracker == .event {
@@ -90,14 +95,15 @@ extension CreateTrackerViewController: CreateTrackerViewDelegate {
             schedule: selectedDates
         )
                 
-        guard let tracker = tracker else { return }
+        guard let tracker = tracker,
+              let selectedCategory
+        else { return }
         
-        try? dataProvider.saveTracker(tracker)
-        
+        try? dataProvider.saveTracker(tracker, in: selectedCategory)
         delegate?.dismissViewController(self)
     }
     
-    func showShedule() {
+    func showSchedule() {
         let viewController = createViewController(type: .shedule)
         present(viewController, animated: true)
     }
@@ -123,12 +129,12 @@ extension CreateTrackerViewController {
             sheduleViewController.delegate = self
             viewController = sheduleViewController
         case .category:
-            let categoryViewController = CategoryViewController()
-            categoryViewController.delegate = self
+            let viewModel = CategoriesViewControllerViewModel()
+            let categoryViewController = CategoriesViewController(viewModel: viewModel, delegate: self)
             viewController = categoryViewController
             
-            if let categoryString {
-                categoryViewController.category = categoryString
+            if let selectedCategory {
+                categoryViewController.selectedCategoryTitle = selectedCategory.title
             }
         }
         
@@ -137,14 +143,16 @@ extension CreateTrackerViewController {
     }
 }
 
-extension CreateTrackerViewController: CategoryViewControllerDelegate {
-    func setCategory(category: String?) {
-        categoryString = category
-        createTrackerView.setCategory(with: category)
+// MARK: CategoriesViewControllerDelegate
+extension CreateTrackerViewController: CategoriesViewControllerDelegate {
+    func setCategory(categoryCoreData: TrackerCategoryCoreData?) {
+        self.selectedCategory = categoryCoreData
+        createTrackerView.setCategory(with: categoryCoreData?.title)
         dismiss(animated: true)
     }
 }
 
+// MARK: SheduleViewControllerDelegate
 extension CreateTrackerViewController: SheduleViewControllerDelegate {
     func setSelectedDates(dates: [String]) {
         selectedDates = dates
